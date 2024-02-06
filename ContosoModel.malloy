@@ -43,25 +43,20 @@ source: orders is orders_base extend {
             moving_range is (abs(order_count - lag(order_count)))
     }
     ->{
+        extend: {
+            measure: avg_moving_range is div(all(moving_range.sum()), all(count(order_month))-1)
+        }
         group_by: 
             order_month
             order_count
             avg_order_count
             moving_range   
        aggregate: 
-            avg_moving_range is div(all(moving_range.sum()), all(count(order_month))-1)
-
-    }
-    -> {
-        group_by:
-            order_month
-            order_count
-            avg_order_count
-            moving_range
             avg_moving_range
             upper_limit is avg_order_count + avg_moving_range*2.66
             lower_limit is avg_order_count - avg_moving_range*2.66
             range_limit is avg_moving_range*3.269
+
         order_by: order_month
     }
 }
